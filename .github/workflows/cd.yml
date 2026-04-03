@@ -1,0 +1,51 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+jobs:
+  local-deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
+    runs-on:
+      - self-hosted
+      - local-deploy
+    permissions:
+      contents: read
+    concurrency:
+      group: local-deploy
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Create environment file from repository secrets
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.DJANGO_SECRET_KEY }}")) {
+            throw "Repository secret DJANGO_SECRET_KEY is required for local deployment."
+          }
+
+          $envLines = @(
+            "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}"
+            "DJANGO_DEBUG=${{ vars.DJANGO_DEBUG || 'False' }}"
+            "DJANGO_ALLOWED_HOSTS=${{ vars.DJANGO_ALLOWED_HOSTS || '127.0.0.1,localhost,0.0.0.0' }}"
+          )
+
+          Set-Content -Path .env -Value $envLines -Encoding ascii
+
+      - name: Deploy containers
+        shell: pwsh
+        run: |
+          docker compose down
+          docker compose up -d --build
+
+      - name: Show running services
+        shell: pwsh
+        run: docker compose ps
