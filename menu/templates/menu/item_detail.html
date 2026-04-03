@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ item.name }} | Restaurant Menu</title>
+    <link rel="stylesheet" href="{% static 'menu/css/menu.css' %}">
+</head>
+<body>
+    <main class="detail-layout">
+        <a class="back-link" href="{% url 'menu:list' %}">Back to menu</a>
+        <article class="detail-card">
+            <header>
+                <p class="category">{{ item.category.name }}</p>
+                <h1>{{ item.name }}</h1>
+            </header>
+
+            <p class="description">{{ item.description|default:'No description yet.' }}</p>
+
+            <dl class="detail-grid">
+                <div>
+                    <dt>Price</dt>
+                    <dd>${{ item.price }}</dd>
+                </div>
+                <div>
+                    <dt>Availability</dt>
+                    {% if item.is_available %}
+                        <dd class="availability in-stock">In stock</dd>
+                    {% else %}
+                        <dd class="availability sold-out">Unavailable</dd>
+                    {% endif %}
+                </div>
+                <div>
+                    <dt>Popularity score</dt>
+                    <dd>{{ item.popularity_score }}</dd>
+                </div>
+            </dl>
+
+            <section>
+                <h2>Tags</h2>
+                <div class="tag-list">
+                    {% for tag in item.tags.all %}
+                        <span class="tag-chip">{{ tag.name }}</span>
+                    {% empty %}
+                        <span class="tag-chip muted">No tags</span>
+                    {% endfor %}
+                </div>
+            </section>
+        </article>
+    </main>
+</body>
+</html>

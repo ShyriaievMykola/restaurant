@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Restaurant Menu</title>
+    <link rel="stylesheet" href="{% static 'menu/css/menu.css' %}">
+</head>
+<body>
+    <main class="layout">
+        <aside class="filters-panel">
+            <h1>Menu Filters</h1>
+            <form method="get" class="filters-form">
+                <label for="q">Search</label>
+                <input id="q" type="text" name="q" value="{{ active_filters.q }}" placeholder="Dish, ingredient, or keyword">
+
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">All categories</option>
+                    {% for category in top_categories %}
+                        <option value="{{ category.slug }}" {% if active_filters.category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                        {% for child in category.children.all %}
+                            <option value="{{ child.slug }}" {% if active_filters.category == child.slug %}selected{% endif %}>&nbsp;&nbsp;- {{ child.name }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+
+                <fieldset>
+                    <legend>Tags</legend>
+                    <div class="tags-grid">
+                        {% for tag in tags %}
+                            <label class="tag-option">
+                                <input type="checkbox" name="tags" value="{{ tag.slug }}" {% if tag.slug in active_filters.tags %}checked{% endif %}>
+                                <span>{{ tag.name }}</span>
+                            </label>
+                        {% empty %}
+                            <p class="hint">No tags yet.</p>
+                        {% endfor %}
+                    </div>
+                    <div class="tag-mode">
+                        <label>
+                            <input type="radio" name="tag_mode" value="or" {% if active_filters.tag_mode != 'and' %}checked{% endif %}>
+                            Match any selected tag
+                        </label>
+                        <label>
+                            <input type="radio" name="tag_mode" value="and" {% if active_filters.tag_mode == 'and' %}checked{% endif %}>
+                            Match all selected tags
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="price-row">
+                    <div>
+                        <label for="min_price">Min price</label>
+                        <input id="min_price" type="number" step="0.01" min="0" name="min_price" value="{{ active_filters.min_price }}">
+                    </div>
+                    <div>
+                        <label for="max_price">Max price</label>
+                        <input id="max_price" type="number" step="0.01" min="0" name="max_price" value="{{ active_filters.max_price }}">
+                    </div>
+                </div>
+
+                <label for="availability">Availability</label>
+                <select id="availability" name="availability">
+                    <option value="all" {% if active_filters.availability == 'all' %}selected{% endif %}>All</option>
+                    <option value="in_stock" {% if active_filters.availability == 'in_stock' %}selected{% endif %}>In stock only</option>
+                </select>
+
+                <label for="sort">Sort by</label>
+                <select id="sort" name="sort">
+                    <option value="name" {% if active_filters.sort == 'name' %}selected{% endif %}>Name</option>
+                    <option value="price_asc" {% if active_filters.sort == 'price_asc' %}selected{% endif %}>Price low to high</option>
+                    <option value="price_desc" {% if active_filters.sort == 'price_desc' %}selected{% endif %}>Price high to low</option>
+                    <option value="popular" {% if active_filters.sort == 'popular' %}selected{% endif %}>Most popular</option>
+                    <option value="newest" {% if active_filters.sort == 'newest' %}selected{% endif %}>Newest</option>
+                </select>
+
+                <div class="form-actions">
+                    <button type="submit">Apply filters</button>
+                    <a class="reset-link" href="{% url 'menu:list' %}">Reset</a>
+                </div>
+            </form>
+        </aside>
+
+        <section class="results-panel">
+            <header class="results-header">
+                <h2>Menu Items</h2>
+                <p>{{ page_obj.paginator.count }} items found</p>
+            </header>
+
+            <div class="quick-stats">
+                <article>
+                    <h3>Total</h3>
+                    <p>{{ quick_stats.total }}</p>
+                </article>
+                <article>
+                    <h3>In stock</h3>
+                    <p>{{ quick_stats.in_stock }}</p>
+                </article>
+                <article>
+                    <h3>Unavailable</h3>
+                    <p>{{ quick_stats.unavailable }}</p>
+                </article>
+                <article>
+                    <h3>Average price</h3>
+                    <p>
+                        {% if quick_stats.avg_price %}
+                            ${{ quick_stats.avg_price|floatformat:2 }}
+                        {% else %}
+                            n/a
+                        {% endif %}
+                    </p>
+                </article>
+            </div>
+
+            {% if active_filter_chips %}
+                <div class="active-filters">
+                    {% for chip in active_filter_chips %}
+                        <a class="active-chip" href="{{ chip.remove_url }}">
+                            {{ chip.label }} <span aria-hidden="true">x</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if items %}
+                <div class="cards">
+                    {% for item in items %}
+                        <article class="menu-card">
+                            <h3><a href="{% url 'menu:detail' item.slug %}">{{ item.name }}</a></h3>
+                            <p class="category">{{ item.category.name }}</p>
+                            <p class="description">{{ item.description|default:'No description yet.' }}</p>
+                            <div class="meta-row">
+                                <span class="price">${{ item.price }}</span>
+                                {% if item.is_available %}
+                                    <span class="availability in-stock">In stock</span>
+                                {% else %}
+                                    <span class="availability sold-out">Unavailable</span>
+                                {% endif %}
+                            </div>
+                            <div class="tag-list">
+                                {% for tag in item.tags.all %}
+                                    <span class="tag-chip">{{ tag.name }}</span>
+                                {% empty %}
+                                    <span class="tag-chip muted">No tags</span>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                {% if is_paginated %}
+                    <nav class="pagination" aria-label="Menu pages">
+                        {% if page_obj.has_previous %}
+                            <a href="?{% if query_string_without_page %}{{ query_string_without_page }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                        {% endif %}
+
+                        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?{% if query_string_without_page %}{{ query_string_without_page }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>No items match your filters.</h3>
+                    <p>Try clearing one or more filters and run another search.</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

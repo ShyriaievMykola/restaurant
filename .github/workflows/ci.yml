@@ -25,8 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Prepare environment file
+        run: cp .env.example .env
+
       - name: Run tests before container build
-        run: python manage.py test restaurant
+        run: python manage.py test
 
   docker-build-run-test:
     needs: pre-build-tests
@@ -39,6 +42,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Prepare environment file
+        run: cp .env.example .env
+
       - name: Build containers
         run: docker compose build
 
@@ -46,7 +52,7 @@ jobs:
         run: docker compose up -d web
 
       - name: Run tests after container start
-        run: docker compose exec -T web python manage.py test restaurant
+        run: docker compose exec -T web python manage.py test
 
       - name: Stop containers
         if: always()
