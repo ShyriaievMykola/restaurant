@@ -26,26 +26,25 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Create environment file from repository secrets
-        shell: pwsh
+        shell: bash
         run: |
-          if ([string]::IsNullOrWhiteSpace("${{ secrets.DJANGO_SECRET_KEY }}")) {
-            throw "Repository secret DJANGO_SECRET_KEY is required for local deployment."
-          }
+          if [ -z "${{ secrets.DJANGO_SECRET_KEY }}" ]; then
+            echo "Repository secret DJANGO_SECRET_KEY is required for local deployment."
+            exit 1
+          fi
 
-          $envLines = @(
-            "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}"
-            "DJANGO_DEBUG=${{ vars.DJANGO_DEBUG || 'False' }}"
-            "DJANGO_ALLOWED_HOSTS=${{ vars.DJANGO_ALLOWED_HOSTS || '127.0.0.1,localhost,0.0.0.0' }}"
-          )
-
-          Set-Content -Path .env -Value $envLines -Encoding ascii
+          {
+            echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}"
+            echo "DJANGO_DEBUG=${{ vars.DJANGO_DEBUG || 'False' }}"
+            echo "DJANGO_ALLOWED_HOSTS=${{ vars.DJANGO_ALLOWED_HOSTS || '127.0.0.1,localhost,0.0.0.0' }}"
+          } > .env
 
       - name: Deploy containers
-        shell: pwsh
+        shell: bash
         run: |
           docker compose down
           docker compose up -d --build
 
       - name: Show running services
-        shell: pwsh
+        shell: bash
         run: docker compose ps
