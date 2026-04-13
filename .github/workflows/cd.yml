@@ -42,7 +42,7 @@ jobs:
       - name: Deploy containers
         shell: bash
         run: |
-          docker compose down
+          docker compose down -v
           rm -f db.sqlite3
           docker compose up -d --build
       
