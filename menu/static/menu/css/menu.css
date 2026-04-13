@@ -363,6 +363,106 @@ button:hover {
     background: #fff;
 }
 
+.price-slider-wrapper .noUi-target {
+    background: #e0e0e0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 6px !important;
+}
+.price-display { margin-bottom: 10px; font-weight: bold; text-align: center; }
+.price-slider-wrapper .noUi-connect {
+    background: #c2612d !important;
+}
+
+/* 1. Стиль основної лінії (треку) */
+.noUi-target {
+    background: #e0e0e0;
+    border: none;
+    box-shadow: none;
+    height: 6px; /* Робимо лінію тоншою */
+    width: 240px;
+    border-radius: 3px;
+    margin: 15px auto 15px auto;
+}
+
+/* 2. Стиль активної частини лінії (між повзунками) */
+.noUi-connect {
+    background: #c2612d;
+}
+
+/* 3. Перетворюємо квадратні ручки на кола */
+.price-slider-wrapper .noUi-horizontal .noUi-handle {
+    width: 22px !important;
+    height: 22px !important;
+    right: -11px !important; /* Половина ширини для центрування */
+    top: -9px !important;    /* Розраховано: (22px висота - 6px лінія) / 2 + 1px корекція */
+    border-radius: 50% !important;
+    background: #fff !important;
+    border: 3px solid #c2612d !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    cursor: pointer !important;
+}
+
+/* 4. Видаляємо дві вертикальні риски всередині ручок */
+.price-slider-wrapper .noUi-handle::before,
+.price-slider-wrapper .noUi-handle::after {
+    display: none !important;
+}
+
+/* 5. Ефект при наведенні (опціонально) */
+.price-slider-wrapper .noUi-handle:hover {
+    background: #fdf2e9 !important; /* Легкий відтінок при наведенні */
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+.price-slider-wrapper .noUi-handle:active {
+    background: #fdf2e9 !important;
+    transform: scale(1.1);
+}
+
+/* 6. Стиль дисплею з цифрами ціни над слайдером */
+.price-display {
+    font-family: inherit;
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+.price-input-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.price-input-container input {
+    width: 45%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.price-input-container input:focus {
+    border-color: #c2612d; /* Ваш колір */
+}
+
+/* Прибираємо стрілочки "вгору-вниз" у полі number */
+.price-input-container input::-webkit-outer-spin-button,
+.price-input-container input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.price-input-container .delimiter {
+    color: #888;
+    font-weight: bold;
+}
+
 .detail-grid dt {
     color: var(--muted);
     font-size: 0.82rem;
