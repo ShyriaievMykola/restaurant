@@ -15,7 +15,10 @@
             <h1>Menu Filters</h1>
             <form method="get" class="filters-form">
                 <label for="q">Search</label>
-                <input id="q" type="text" name="q" value="{{ active_filters.q }}" placeholder="Dish, ingredient, or keyword">
+                <div class="search-wrapper">
+                    <input id="q" type="text" name="q" value="{{ active_filters.q }}" placeholder="Dish, ingredient, or keyword">
+                    <div id="autocomplete-results" class="autocomplete-dropdown"></div>
+                </div>
 
                 <label for="category">Category</label>
                 <select id="category" name="category">
@@ -225,6 +228,57 @@
             slider.noUiSlider.set(values);
         });
     });
+    const searchInput = document.getElementById('q');
+    const resultsContainer = document.getElementById('autocomplete-results');
+    let debounceTimer;
+
+    if (searchInput && resultsContainer) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/api/autocomplete/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.suggestions && data.suggestions.length > 0) {
+                            resultsContainer.innerHTML = data.suggestions.map(item => `
+                                <div class="suggestion-item" data-name="${item.name}">
+                                    <span>${item.name}</span>
+                                    <span class="category-tag">${item.category}</span>
+                                </div>
+                            `).join('');
+                            resultsContainer.style.display = 'block';
+                        } else {
+                            resultsContainer.style.display = 'none';
+                        }
+                    })
+                    .catch(err => console.error("Autocomplete error:", err));
+            }, 300);
+        });
+
+        // Вибір страви при кліку
+        resultsContainer.addEventListener('click', function(e) {
+            const item = e.target.closest('.suggestion-item');
+            if (item) {
+                searchInput.value = item.dataset.name;
+                resultsContainer.style.display = 'none';
+                searchInput.form.submit(); // Автоматичне відправлення форми
+            }
+        });
+
+        // Закриття списку при кліку поза ним
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
 </body>
