@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.db.models import Avg
+from django.db.models import Avg, Max, Min
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views import View
@@ -107,12 +107,19 @@ class MenuListView(ListView):
 		context = super().get_context_data(**kwargs)
 		active_filters = self._get_active_filters()
 
+		price_limits = MenuItem.objects.aggregate(
+            min_p=Min('price'), 
+            max_p=Max('price')
+        )
+
+		context["min_limit"] = float(price_limits['min_p'] or 0)
+		context["max_limit"] = float(price_limits['max_p'] or 100)
 		context["top_categories"] = Category.objects.filter(parent__isnull=True).prefetch_related("children")
 		context["tags"] = Tag.objects.all()
 		context["active_filters"] = active_filters
 		context["active_filter_chips"] = self._build_active_filter_chips(active_filters)
 		context["quick_stats"] = self._build_quick_stats(self.get_queryset())
-
+	
 		params_without_page = self.request.GET.copy()
 		params_without_page.pop("page", None)
 		context["query_string_without_page"] = params_without_page.urlencode()
