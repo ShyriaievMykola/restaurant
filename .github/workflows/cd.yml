@@ -43,6 +43,7 @@ jobs:
         shell: bash
         run: |
           docker compose down
+          rm -f db.sqlite3
           docker compose up -d --build
       
       - name: Apply database migrations
