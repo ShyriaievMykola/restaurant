@@ -44,6 +44,10 @@ jobs:
         run: |
           docker compose down
           docker compose up -d --build
+      
+      - name: Seed menu data
+        shell: bash
+        run: docker exec restaurant-web-1 python manage.py seed_menu
 
       - name: Show running services
         shell: bash
