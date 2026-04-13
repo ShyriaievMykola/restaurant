@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Restaurant Menu</title>
     <link rel="stylesheet" href="{% static 'menu/css/menu.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 </head>
+
 <body>
     <main class="layout">
         <aside class="filters-panel">
@@ -50,14 +52,28 @@
                     </div>
                 </fieldset>
 
-                <div class="price-row">
-                    <div>
-                        <label for="min_price">Min price</label>
-                        <input id="min_price" type="number" step="0.01" min="0" name="min_price" value="{{ active_filters.min_price }}">
+                <div class="price-slider-wrapper">
+                    <label>Price Range</label>
+                    
+                    <div class="price-input-container">
+                        <input type="number" 
+                            id="min_price_field" 
+                            name="min_price" 
+                            step="0.1" 
+                            value="{{ active_filters.min_price|default:min_limit }}">
+                        
+                        <span class="delimiter">-</span>
+                        
+                        <input type="number" 
+                            id="max_price_field" 
+                            name="max_price" 
+                            step="0.1" 
+                            value="{{ active_filters.max_price|default:max_limit }}">
                     </div>
-                    <div>
-                        <label for="max_price">Max price</label>
-                        <input id="max_price" type="number" step="0.01" min="0" name="max_price" value="{{ active_filters.max_price }}">
+
+                    <div id="price-range-slider" 
+                        data-min="{{ min_limit|default:0 }}" 
+                        data-max="{{ max_limit|default:100 }}">
                     </div>
                 </div>
 
@@ -171,5 +187,45 @@
             {% endif %}
         </section>
     </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('price-range-slider');
+    const minField = document.getElementById('min_price_field');
+    const maxField = document.getElementById('max_price_field');
+    const fields = [minField, maxField];
+
+    const minLimit = parseFloat(slider.dataset.min);
+    const maxLimit = parseFloat(slider.dataset.max);
+
+    noUiSlider.create(slider, {
+        start: [parseFloat(minField.value), parseFloat(maxField.value)],
+        connect: true,
+        range: {
+            'min': minLimit,
+            'max': maxLimit
+        },
+        step: 0.1,
+        format: {
+            to: value => value.toFixed(2),
+            from: value => parseFloat(value)
+        }
+    });
+
+    // 1. Повзунок -> Поля
+    slider.noUiSlider.on('update', function (values, handle) {
+        fields[handle].value = values[handle];
+    });
+
+    // 2. Поля -> Повзунок
+    fields.forEach((field, index) => {
+        field.addEventListener('change', function() {
+            let values = [null, null];
+            values[index] = this.value;
+            slider.noUiSlider.set(values);
+        });
+    });
+});
+</script>
 </body>
 </html>
