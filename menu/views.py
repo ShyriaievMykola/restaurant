@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.db.models import Avg, Max, Min
+from django.db.models import Avg, Max, Min, Q
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views import View
@@ -11,6 +11,29 @@ from .services.filters import apply_menu_filters
 
 def get_menu_base_queryset():
 	return MenuItem.objects.select_related("category", "category__parent").prefetch_related("tags")
+
+def menu_autocomplete(request):
+    query = request.GET.get('q', '').strip()
+    suggestions = []
+    
+    if len(query) >= 2:
+        items = MenuItem.objects.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()[:10]
+        
+        suggestions = [
+            {
+                "name": item.name,
+                "category": item.category.name,
+                "url": reverse('menu:detail', kwargs={'slug': item.slug})
+            } 
+            for item in items
+        ]
+        
+    return JsonResponse({"suggestions": suggestions})
 
 
 class MenuListView(ListView):
