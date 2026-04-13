@@ -45,6 +45,10 @@ jobs:
           docker compose down
           docker compose up -d --build
       
+      - name: Apply database migrations
+        shell: bash
+        run: docker exec restaurant-web-1 python manage.py migrate
+
       - name: Seed menu data
         shell: bash
         run: docker exec restaurant-web-1 python manage.py seed_menu
