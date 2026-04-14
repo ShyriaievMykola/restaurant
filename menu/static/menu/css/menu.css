@@ -156,7 +156,7 @@ button:hover {
 .results-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     border-bottom: 1px solid var(--line);
     padding-bottom: 0.8rem;
 }
@@ -333,6 +333,251 @@ button:hover {
     color: var(--accent-deep);
     font-weight: 600;
     background: #fff;
+}
+
+.header-row,
+.detail-header-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.header-row h2 {
+    margin-bottom: 0.2rem;
+}
+
+.cart-link,
+.button,
+a.button,
+.cart-link:visited,
+.button:visited,
+a.button:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    min-height: 42px;
+    padding: 0.58rem 1rem;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.12s ease;
+}
+
+.cart-link:hover,
+.button:hover,
+a.button:hover {
+    background: var(--accent-deep);
+}
+
+.button:active,
+a.button:active,
+.cart-link:active {
+    transform: translateY(1px);
+}
+
+.button.secondary,
+a.button.secondary,
+.button.secondary:visited,
+a.button.secondary:visited {
+    background: #efe2ca;
+    color: var(--accent-deep);
+    border: 1px solid #d8bf98;
+}
+
+.button.secondary:hover,
+a.button.secondary:hover {
+    background: #e4d1af;
+}
+
+.card-actions {
+    margin-top: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.inline-form {
+    margin: 0;
+}
+
+.inline-form button {
+    width: auto;
+    padding-inline: 0.85rem;
+}
+
+.text-link {
+    color: var(--accent-deep);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.text-link:visited {
+    color: var(--accent-deep);
+}
+
+.text-link:hover {
+    text-decoration: underline;
+}
+
+.cart-action-form {
+    margin: 0;
+}
+
+.cart-action-form button {
+    width: auto;
+    min-width: 180px;
+}
+
+.detail-actions {
+    margin-top: 1rem;
+}
+
+.page-subtitle {
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+}
+
+.table-wrap {
+    margin-top: 1rem;
+    overflow-x: auto;
+}
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+.cart-table thead {
+    background: #f4e7d0;
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 0.82rem 0.95rem;
+    border-bottom: 1px solid #ecdcbf;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.cart-table tfoot td {
+    border-bottom: none;
+    background: #fffaf0;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.cart-summary {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.9rem;
+    margin-bottom: 0.9rem;
+}
+
+.cart-summary h2 {
+    margin: 0 0 0.7rem;
+}
+
+.cart-summary ul,
+.order-items-list,
+.order-details-list {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+}
+
+.cart-summary li,
+.order-items-list li,
+.order-details-list li {
+    margin-bottom: 0.35rem;
+}
+
+.checkout-form {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem;
+    background: #fff;
+}
+
+.checkout-form p {
+    margin: 0 0 0.8rem;
+}
+
+.checkout-form label {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.checkout-form textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #d7c6a7;
+    padding: 0.62rem 0.72rem;
+    font: inherit;
+    color: var(--ink);
+    background: #fffefb;
+}
+
+.checkout-form .button {
+    width: auto;
+    margin-top: 0.55rem;
+}
+
+.order-meta {
+    margin-top: 0.8rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.8rem;
+}
+
+.order-meta section {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.9rem;
+}
+
+.order-meta h2 {
+    margin: 0 0 0.6rem;
+}
+
+@media (max-width: 680px) {
+    .header-row,
+    .detail-header-row,
+    .form-actions,
+    .card-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .card-actions .button,
+    .form-actions .button,
+    .form-actions a.button,
+    .cart-link {
+        width: 100%;
+    }
+
+    .cart-table {
+        font-size: 0.9rem;
+    }
+
+    .cart-table th,
+    .cart-table td {
+        padding: 0.56rem;
+    }
 }
 
 .detail-layout {

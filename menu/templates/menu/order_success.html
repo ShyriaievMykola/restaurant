@@ -19,22 +19,26 @@
             <p>Order reference: <strong>{{ order.order_uuid }}</strong></p>
             <p>We saved your order and will process it shortly.</p>
 
-            <section>
-                <h2>Order details</h2>
-                <p><strong>{{ order.first_name }} {{ order.last_name }}</strong></p>
-                <p>{{ order.email }}</p>
-                <p>{{ order.phone }}</p>
-                <p>{{ order.address|linebreaksbr }}</p>
-            </section>
+            <div class="order-meta">
+                <section>
+                    <h2>Order details</h2>
+                    <ul class="order-details-list">
+                        <li><strong>{{ order.first_name }} {{ order.last_name }}</strong></li>
+                        <li>{{ order.email }}</li>
+                        <li>{{ order.phone }}</li>
+                        <li>{{ order.address }}</li>
+                    </ul>
+                </section>
 
-            <section>
-                <h2>Items</h2>
-                <ul>
-                    {% for item in order.items.all %}
-                        <li>{{ item.menu_item.name }} × {{ item.quantity }} — ${{ item.price|floatformat:2 }}</li>
-                    {% endfor %}
-                </ul>
-            </section>
+                <section>
+                    <h2>Items</h2>
+                    <ul class="order-items-list">
+                        {% for item in order.items.all %}
+                            <li>{{ item.menu_item.name }} × {{ item.quantity }} — ${{ item.total_price|floatformat:2 }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
         </article>
     </main>
 </body>
