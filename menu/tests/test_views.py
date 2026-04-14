@@ -171,6 +171,20 @@ class MenuListViewTests(TestCase):
         self.assertEqual(payload["items"][0]["slug"], "fusion-bowl")
         self.assertEqual(payload["filters"]["tag_mode"], "and")
 
+    def test_api_uses_default_page_size_for_invalid_value(self):
+        response = self.client.get(reverse("menu:api-items"), {"page_size": "invalid"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["pagination"]["page_size"], 20)
+
+    def test_api_clamps_page_size_to_maximum(self):
+        response = self.client.get(reverse("menu:api-items"), {"page_size": "999"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["pagination"]["page_size"], 100)
+
 
 class MenuItemDetailViewTests(TestCase):
     def test_detail_page_loads(self):
@@ -187,3 +201,62 @@ class MenuItemDetailViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Tom Yum")
+
+
+class MenuAutocompleteViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        category = Category.objects.create(name="Soups", slug="soups")
+        vegan = Tag.objects.create(name="Vegan", slug="vegan")
+        spicy = Tag.objects.create(name="Spicy", slug="spicy")
+
+        cls.item = MenuItem.objects.create(
+            name="Tom Yum",
+            slug="tom-yum",
+            description="Thai spicy soup",
+            price=Decimal("10.00"),
+            category=category,
+        )
+        cls.item.tags.add(vegan, spicy)
+
+        MenuItem.objects.create(
+            name="Tomato Soup",
+            slug="tomato-soup",
+            description="Classic tomato soup",
+            price=Decimal("8.50"),
+            category=category,
+        )
+
+    def test_autocomplete_returns_empty_for_short_query(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "t"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"suggestions": []})
+
+    def test_autocomplete_returns_matching_item_with_url(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "tom"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(payload["suggestions"]), 2)
+        self.assertEqual(payload["suggestions"][0]["name"], "Tom Yum")
+        self.assertEqual(payload["suggestions"][0]["category"], "Soups")
+        self.assertEqual(
+            payload["suggestions"][0]["url"],
+            reverse("menu:detail", kwargs={"slug": "tom-yum"}),
+        )
+
+    def test_autocomplete_sorts_results_by_name(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "tom"})
+        suggestions = response.json()["suggestions"]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["name"] for item in suggestions], ["Tom Yum", "Tomato Soup"])
+
+
+class HealthCheckViewTests(TestCase):
+    def test_health_check_returns_ok_payload(self):
+        response = self.client.get(reverse("menu:health"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
