@@ -171,6 +171,20 @@ class MenuListViewTests(TestCase):
         self.assertEqual(payload["items"][0]["slug"], "fusion-bowl")
         self.assertEqual(payload["filters"]["tag_mode"], "and")
 
+    def test_api_uses_default_page_size_for_invalid_value(self):
+        response = self.client.get(reverse("menu:api-items"), {"page_size": "invalid"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["pagination"]["page_size"], 20)
+
+    def test_api_clamps_page_size_to_maximum(self):
+        response = self.client.get(reverse("menu:api-items"), {"page_size": "999"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["pagination"]["page_size"], 100)
+
 
 class MenuItemDetailViewTests(TestCase):
     def test_detail_page_loads(self):
