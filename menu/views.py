@@ -220,3 +220,7 @@ class MenuItemDetailView(DetailView):
     context_object_name = "item"
     slug_field = "slug"
     slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        return get_menu_base_queryset()
+
