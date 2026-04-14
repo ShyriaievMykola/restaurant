@@ -22,7 +22,9 @@ class TagAdmin(admin.ModelAdmin):
 class MenuItemAdmin(admin.ModelAdmin):
 	list_display = ("name", "category", "price", "is_available", "popularity_score", "updated_at")
 	list_filter = ("category", "is_available", "tags")
-	search_fields = ("name", "slug", "description")
+	search_fields = ("name", "slug", "description", "category__name")
 	prepopulated_fields = {"slug": ("name",)}
 	filter_horizontal = ("tags",)
 	list_select_related = ("category",)
+	list_per_page = 50
+	ordering = ("name",)
