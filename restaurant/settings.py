@@ -41,6 +41,15 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+
+# Respect X-Forwarded-Proto when running behind a reverse proxy (Nginx, Traefik, etc.).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 

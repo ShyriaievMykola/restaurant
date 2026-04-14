@@ -27,6 +27,14 @@ Create `.env` (you can copy from `.env.example`):
 DJANGO_SECRET_KEY=replace-with-your-secret-key
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,0.0.0.0
+DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
+```
+
+For production (HTTPS + domain), set trusted origins with scheme, for example:
+
+```env
+DJANGO_ALLOWED_HOSTS=example.com,www.example.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com,https://www.example.com
 ```
 
 ## Run Migrations
