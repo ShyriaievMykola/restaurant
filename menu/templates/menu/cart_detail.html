@@ -13,37 +13,40 @@
         <article class="detail-card">
             <header>
                 <h1>Your Cart</h1>
+                <p class="page-subtitle">Review your selected dishes before checkout.</p>
             </header>
 
             {% if cart_items %}
-                <table class="cart-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in cart_items %}
+                <div class="table-wrap">
+                    <table class="cart-table">
+                        <thead>
                             <tr>
-                                <td><a href="{% url 'menu:detail' item.slug %}">{{ item.name }}</a></td>
-                                <td>${{ item.unit_price }}</td>
-                                <td>{{ item.quantity }}</td>
-                                <td>${{ item.subtotal }}</td>
-                                <td><a class="text-link" href="{% url 'menu:cart-remove' item.slug %}">Remove</a></td>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                                <th></th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
-                            <td colspan="2"><strong>${{ cart_total }}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td><a class="text-link" href="{% url 'menu:detail' item.slug %}">{{ item.name }}</a></td>
+                                    <td>${{ item.unit_price }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.subtotal }}</td>
+                                    <td><a class="text-link" href="{% url 'menu:cart-remove' item.slug %}">Remove</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                                <td colspan="2"><strong>${{ cart_total }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
                 <div class="form-actions">
                     <a class="button secondary" href="{% url 'menu:list' %}">Continue shopping</a>
