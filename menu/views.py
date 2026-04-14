@@ -41,6 +41,10 @@ def menu_autocomplete(request):
     return JsonResponse({"suggestions": suggestions})
 
 
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
+
 class MenuListView(ListView):
     model = MenuItem
     template_name = "menu/menu_list.html"

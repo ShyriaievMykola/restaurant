@@ -252,3 +252,11 @@ class MenuAutocompleteViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual([item["name"] for item in suggestions], ["Tom Yum", "Tomato Soup"])
+
+
+class HealthCheckViewTests(TestCase):
+    def test_health_check_returns_ok_payload(self):
+        response = self.client.get(reverse("menu:health"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
