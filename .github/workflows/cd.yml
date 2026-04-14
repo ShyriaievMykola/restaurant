@@ -20,6 +20,10 @@ jobs:
       cancel-in-progress: true
 
     steps:
+      - name: Pre-checkout workspace permission fix
+        shell: bash
+        run: sudo chown -R $(whoami):$(id -g) ${{ github.workspace }} || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -58,3 +62,8 @@ jobs:
       - name: Show running services
         shell: bash
         run: docker compose ps
+
+      - name: Fix permissions for next cleanup
+        if: always()
+        shell: bash
+        run: sudo chown -R $(whoami):$(id -g) ${{ github.workspace }}
