@@ -170,6 +170,17 @@
                                     <span class="tag-chip muted">No tags</span>
                                 {% endfor %}
                             </div>
+                            <div class="card-actions">
+                                {% if item.is_available %}
+                                    <form action="{% url 'menu:cart-add' item.slug %}" method="post" class="inline-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button">Add to cart</button>
+                                    </form>
+                                {% else %}
+                                    <span class="availability sold-out">Unavailable</span>
+                                {% endif %}
+                                <a class="button secondary" href="{% url 'menu:detail' item.slug %}">Details</a>
+                            </div>
                         </article>
                     {% endfor %}
                 </div>

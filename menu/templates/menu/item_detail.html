@@ -53,10 +53,13 @@
                 </div>
             </section>
 
-            <form action="{% url 'menu:cart-add' item.slug %}" method="post" class="cart-action-form">
-                {% csrf_token %}
-                <button type="submit" class="button">Add to cart</button>
-            </form>
+            <div class="form-actions detail-actions">
+                <form action="{% url 'menu:cart-add' item.slug %}" method="post" class="cart-action-form">
+                    {% csrf_token %}
+                    <button type="submit" class="button">Add to cart</button>
+                </form>
+                <a class="button secondary" href="{% url 'menu:list' %}">Continue shopping</a>
+            </div>
         </article>
     </main>
 </body>
