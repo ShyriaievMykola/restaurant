@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Checkout | Restaurant Menu</title>
+    <link rel="stylesheet" href="{% static 'menu/css/menu.css' %}">
+</head>
+<body>
+    <main class="detail-layout">
+        <a class="back-link" href="{% url 'menu:cart' %}">Back to cart</a>
+        <article class="detail-card">
+            <header>
+                <h1>Checkout</h1>
+                <p>We are not processing payments in this demo. Your order will be created and saved.</p>
+            </header>
+
+            {% if cart_items %}
+                <section class="cart-summary">
+                    <h2>Order summary</h2>
+                    <ul>
+                        {% for item in cart_items %}
+                            <li>{{ item.name }} × {{ item.quantity }} — ${{ item.subtotal }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Total: ${{ cart_total }}</strong></p>
+                </section>
+
+                <form method="post" class="checkout-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="button">Place Order</button>
+                </form>
+            {% else %}
+                <div class="empty-state">
+                    <h3>Your cart is empty.</h3>
+                    <p>Add some items before checking out.</p>
+                </div>
+            {% endif %}
+        </article>
+    </main>
+</body>
+</html>

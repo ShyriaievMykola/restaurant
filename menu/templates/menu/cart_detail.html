@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shopping Cart | Restaurant Menu</title>
+    <link rel="stylesheet" href="{% static 'menu/css/menu.css' %}">
+</head>
+<body>
+    <main class="detail-layout">
+        <a class="back-link" href="{% url 'menu:list' %}">Back to menu</a>
+        <article class="detail-card">
+            <header>
+                <h1>Your Cart</h1>
+            </header>
+
+            {% if cart_items %}
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                            <tr>
+                                <td><a href="{% url 'menu:detail' item.slug %}">{{ item.name }}</a></td>
+                                <td>${{ item.unit_price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ item.subtotal }}</td>
+                                <td><a class="text-link" href="{% url 'menu:cart-remove' item.slug %}">Remove</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                            <td colspan="2"><strong>${{ cart_total }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="form-actions">
+                    <a class="button secondary" href="{% url 'menu:list' %}">Continue shopping</a>
+                    <a class="button" href="{% url 'menu:checkout' %}">Checkout</a>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>Your cart is empty.</h3>
+                    <p>Add items to the cart from the menu page.</p>
+                </div>
+            {% endif %}
+        </article>
+    </main>
+</body>
+</html>
