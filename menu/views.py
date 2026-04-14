@@ -1,16 +1,130 @@
+from decimal import Decimal
+
 from django.core.paginator import Paginator
 from django.db.models import Avg, Max, Min, Q
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from .models import Category, MenuItem, Tag
+from .forms import OrderForm
+from .models import Category, MenuItem, Order, OrderItem, Tag
 from .services.filters import apply_menu_filters
 
 
 def get_menu_base_queryset():
     return MenuItem.objects.select_related("category", "category__parent").prefetch_related("tags")
+
+CART_SESSION_ID = "cart"
+
+
+def _get_cart(request):
+    return request.session.get(CART_SESSION_ID, {})
+
+
+def _save_cart(request, cart):
+    request.session[CART_SESSION_ID] = cart
+    request.session.modified = True
+
+
+def _build_cart_context(request):
+    cart = _get_cart(request)
+    items = []
+    total = Decimal("0.00")
+
+    for item_id, data in cart.items():
+        try:
+            menu_item = MenuItem.objects.get(id=item_id)
+        except MenuItem.DoesNotExist:
+            continue
+
+        quantity = data.get("quantity", 1)
+        unit_price = Decimal(data.get("price", str(menu_item.price)))
+        subtotal = unit_price * quantity
+        total += subtotal
+
+        items.append(
+            {
+                "object": menu_item,
+                "name": menu_item.name,
+                "slug": menu_item.slug,
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "subtotal": subtotal,
+            }
+        )
+
+    return {
+        "cart_items": items,
+        "cart_total": total,
+        "cart_count": sum(item["quantity"] for item in items),
+    }
+
+
+def add_to_cart(request, slug):
+    menu_item = get_object_or_404(MenuItem, slug=slug, is_available=True)
+    cart = _get_cart(request)
+    item_id = str(menu_item.id)
+
+    if item_id in cart:
+        cart[item_id]["quantity"] += 1
+    else:
+        cart[item_id] = {
+            "name": menu_item.name,
+            "slug": menu_item.slug,
+            "price": str(menu_item.price),
+            "quantity": 1,
+        }
+
+    _save_cart(request, cart)
+    return redirect(request.META.get("HTTP_REFERER", reverse("menu:list")))
+
+
+def remove_from_cart(request, slug):
+    menu_item = get_object_or_404(MenuItem, slug=slug)
+    cart = _get_cart(request)
+    cart.pop(str(menu_item.id), None)
+    _save_cart(request, cart)
+    return redirect("menu:cart")
+
+
+def cart_detail(request):
+    context = _build_cart_context(request)
+    return render(request, "menu/cart_detail.html", context)
+
+
+def checkout(request):
+    context = _build_cart_context(request)
+
+    if not context["cart_items"]:
+        return redirect("menu:cart")
+
+    if request.method == "POST":
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            order = form.save()
+            for item in context["cart_items"]:
+                OrderItem.objects.create(
+                    order=order,
+                    menu_item=item["object"],
+                    price=item["unit_price"],
+                    quantity=item["quantity"],
+                )
+
+            request.session.pop(CART_SESSION_ID, None)
+            return redirect("menu:order-success", order_uuid=order.order_uuid)
+    else:
+        form = OrderForm()
+
+    context["form"] = form
+    return render(request, "menu/checkout.html", context)
+
+
+def order_success(request, order_uuid):
+    order = get_object_or_404(Order, order_uuid=order_uuid)
+    return render(request, "menu/order_success.html", {"order": order})
+
 
 def menu_autocomplete(request):
     query = request.GET.get("q", "").strip()
@@ -151,6 +265,7 @@ class MenuListView(ListView):
         context["active_filters"] = active_filters
         context["active_filter_chips"] = self._build_active_filter_chips(active_filters)
         context["quick_stats"] = self._build_quick_stats(self.get_queryset())
+        context["cart_count"] = _build_cart_context(self.request)["cart_count"]
     
         params_without_page = self.request.GET.copy()
         params_without_page.pop("page", None)
@@ -232,5 +347,10 @@ class MenuItemDetailView(DetailView):
 
     def get_queryset(self):
         return get_menu_base_queryset()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["cart_count"] = _build_cart_context(self.request)["cart_count"]
+        return context
 
 
