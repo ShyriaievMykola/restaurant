@@ -8,5 +8,5 @@ urlpatterns = [
     path("", MenuListView.as_view(), name="list"),
     path("api/items/", MenuItemsApiView.as_view(), name="api-items"),
     path("item/<slug:slug>/", MenuItemDetailView.as_view(), name="detail"),
-    path('api/autocomplete/', menu_autocomplete, name='autocomplete'),
+    path("api/autocomplete/", menu_autocomplete, name="autocomplete"),
 ]
