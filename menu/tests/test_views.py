@@ -219,6 +219,14 @@ class MenuAutocompleteViewTests(TestCase):
         )
         cls.item.tags.add(vegan, spicy)
 
+        MenuItem.objects.create(
+            name="Tomato Soup",
+            slug="tomato-soup",
+            description="Classic tomato soup",
+            price=Decimal("8.50"),
+            category=category,
+        )
+
     def test_autocomplete_returns_empty_for_short_query(self):
         response = self.client.get(reverse("menu:autocomplete"), {"q": "t"})
 
@@ -230,10 +238,17 @@ class MenuAutocompleteViewTests(TestCase):
         payload = response.json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(payload["suggestions"]), 1)
+        self.assertEqual(len(payload["suggestions"]), 2)
         self.assertEqual(payload["suggestions"][0]["name"], "Tom Yum")
         self.assertEqual(payload["suggestions"][0]["category"], "Soups")
         self.assertEqual(
             payload["suggestions"][0]["url"],
             reverse("menu:detail", kwargs={"slug": "tom-yum"}),
         )
+
+    def test_autocomplete_sorts_results_by_name(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "tom"})
+        suggestions = response.json()["suggestions"]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["name"] for item in suggestions], ["Tom Yum", "Tomato Soup"])
