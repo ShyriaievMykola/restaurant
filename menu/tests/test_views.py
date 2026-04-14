@@ -187,3 +187,39 @@ class MenuItemDetailViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Tom Yum")
+
+
+class MenuAutocompleteViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        category = Category.objects.create(name="Soups", slug="soups")
+        vegan = Tag.objects.create(name="Vegan", slug="vegan")
+        spicy = Tag.objects.create(name="Spicy", slug="spicy")
+
+        cls.item = MenuItem.objects.create(
+            name="Tom Yum",
+            slug="tom-yum",
+            description="Thai spicy soup",
+            price=Decimal("10.00"),
+            category=category,
+        )
+        cls.item.tags.add(vegan, spicy)
+
+    def test_autocomplete_returns_empty_for_short_query(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "t"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"suggestions": []})
+
+    def test_autocomplete_returns_matching_item_with_url(self):
+        response = self.client.get(reverse("menu:autocomplete"), {"q": "tom"})
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(payload["suggestions"]), 1)
+        self.assertEqual(payload["suggestions"][0]["name"], "Tom Yum")
+        self.assertEqual(payload["suggestions"][0]["category"], "Soups")
+        self.assertEqual(
+            payload["suggestions"][0]["url"],
+            reverse("menu:detail", kwargs={"slug": "tom-yum"}),
+        )
