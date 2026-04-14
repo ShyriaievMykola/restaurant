@@ -8,7 +8,20 @@ from menu.models import Category, MenuItem, Tag
 class Command(BaseCommand):
     help = "Create demo categories, tags, and menu items for local development"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--clear",
+            action="store_true",
+            help="Delete existing menu items, tags, and categories before seeding.",
+        )
+
     def handle(self, *args, **options):
+        if options["clear"]:
+            MenuItem.objects.all().delete()
+            Tag.objects.all().delete()
+            Category.objects.all().delete()
+            self.stdout.write(self.style.WARNING("Existing menu data removed."))
+
         categories = {
             "mains": self._category("Mains", "mains"),
             "pasta": self._category("Pasta", "pasta", parent_slug="mains"),
