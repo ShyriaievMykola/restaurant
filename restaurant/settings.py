@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,10 +36,32 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me-in-env')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() in ('1', 'true', 'yes', 'on')
 
+def _normalize_allowed_host(raw_host: str) -> str:
+    host = raw_host.strip()
+    if not host:
+        return ''
+
+    # Allow users to pass full URLs by extracting only hostname.
+    if '://' in host:
+        parsed = urlparse(host)
+        host = parsed.netloc or parsed.path
+
+    host = host.split('/')[0].strip()
+
+    # Django ALLOWED_HOSTS entries should not contain ports.
+    if ':' in host and not host.startswith('['):
+        host = host.split(':', 1)[0]
+
+    return host.strip()
+
+
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-    if host.strip()
+    normalized
+    for normalized in (
+        _normalize_allowed_host(host)
+        for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+    )
+    if normalized
 ]
 
 CSRF_TRUSTED_ORIGINS = [
