@@ -41,7 +41,7 @@ jobs:
         run: |
           {
             echo "DJANGO_SECRET_KEY=test-secret-key"
-            echo "DJANGO_DEBUG=False"
+            echo "DJANGO_DEBUG=True"
             echo "DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost"
             echo "DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000"
           } > .env
