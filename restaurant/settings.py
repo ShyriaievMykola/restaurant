@@ -64,6 +64,17 @@ ALLOWED_HOSTS = [
     if normalized
 ]
 
+if not DEBUG:
+    # Keep Heroku reachable even if DJANGO_ALLOWED_HOSTS is misconfigured.
+    ALLOWED_HOSTS.append('.herokuapp.com')
+
+    explicit_heroku_app = os.getenv('HEROKU_APP_NAME', '').strip()
+    if explicit_heroku_app:
+        ALLOWED_HOSTS.append(f'{explicit_heroku_app}.herokuapp.com')
+
+    # Preserve order while removing duplicates.
+    ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
