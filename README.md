@@ -72,3 +72,49 @@ python manage.py test
 ```bash
 docker-compose up --build
 ```
+
+## Heroku CD (separate from existing CD)
+
+The repository now supports an additional Heroku deployment workflow in `.github/workflows/cd-heroku.yml`.
+It does not replace your current CD pipeline and can run in parallel.
+
+### What this workflow does
+
+1. `build` job: installs dependencies and runs Django tests.
+2. `deploy` job: deploys the app to Heroku only if the build job succeeds.
+
+Triggers:
+- push to `main`
+- push to `master`
+- pull request to `main` or `master` (tests only)
+- manual run via `workflow_dispatch`
+
+Merge-to-master condition:
+- On push to `main`, successful `Build and test` automatically merges `main` into `master`.
+- Heroku deploy runs only on `push`, so PR checks do not trigger deployment.
+
+### Required GitHub Secrets
+
+Add these in repository Settings -> Secrets and variables -> Actions:
+
+- `HEROKU_API_KEY` (Heroku account API key)
+- `HEROKU_EMAIL` (email of Heroku account owner)
+- `HEROKU_APP_NAME` (target Heroku app name)
+- `DJANGO_SECRET_KEY` (production Django secret key)
+
+### Optional GitHub Variables
+
+- `DJANGO_ALLOWED_HOSTS`
+- `DJANGO_CSRF_TRUSTED_ORIGINS`
+
+If optional variables are not set, workflow defaults are used:
+- `DJANGO_ALLOWED_HOSTS=<HEROKU_APP_NAME>.herokuapp.com`
+- `DJANGO_CSRF_TRUSTED_ORIGINS=https://<HEROKU_APP_NAME>.herokuapp.com`
+
+### Connect GitHub and Heroku
+
+1. Create a Heroku app.
+2. Open Account Settings in Heroku and copy API key.
+3. Save secrets listed above in GitHub repository settings.
+4. Push a commit to `main` or `master`.
+5. Verify successful run in GitHub Actions.
