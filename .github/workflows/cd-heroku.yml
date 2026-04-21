@@ -147,3 +147,9 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
         run: heroku run python manage.py migrate --app "$HEROKU_APP_NAME"
+
+      - name: Seed demo menu data
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: heroku run python manage.py seed_menu --app "$HEROKU_APP_NAME"
